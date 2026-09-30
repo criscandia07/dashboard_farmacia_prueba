@@ -1,7 +1,27 @@
 import streamlit as st
 
+# Versión del esquema de datos (cambiar esta clave fuerza la actualización inmediata)
+DATA_SCHEMA_VERSION = "v2.0_celeste_gris_req_funciones"
+
+def auto_generate_tens(cant_turnos, tens_por_turno):
+    """Genera automáticamente IDs de TENS y los reparte de manera equitativa por turno."""
+    lista = []
+    idx = 1
+    for turno in range(1, cant_turnos + 1):
+        for _ in range(tens_por_turno):
+            lista.append({
+                "id": f"{idx:03d}",
+                "turno": f"Turno {turno}"
+            })
+            idx += 1
+    return lista
+
 def init_session_state():
-    """Inicializa todas las estructuras de datos dentro de st.session_state con el nuevo esquema."""
+    """Inicializa la sesión. Si detecta una versión antigua, borra la memoria y carga el nuevo modelo."""
+    if st.session_state.get("schema_version") != DATA_SCHEMA_VERSION:
+        st.session_state.clear()
+        st.session_state.schema_version = DATA_SCHEMA_VERSION
+
     if "params" not in st.session_state:
         st.session_state.params = {
             "dias_programar": 10,
@@ -12,7 +32,6 @@ def init_session_state():
             "tens_por_turno": 4,
         }
 
-    # Generación inicial: 8 TENS divididos automáticamente en 2 turnos de 4
     if "tens_list" not in st.session_state:
         st.session_state.tens_list = auto_generate_tens(2, 4)
 
@@ -30,35 +49,22 @@ def init_session_state():
         ]
 
     if "bloques" not in st.session_state:
-        # 8 bloques con requerimientos específicos por función
+        # Estructura requerida según el nuevo prompt: requerimiento por función individual
         st.session_state.bloques = [
-            {"num": 1, "inicio": "08:00", "fin": "09:30", "colacion": False, "req_RECEPCIÓN": 1, "req_PREPARACIÓN": 1, "req_REVISIÓN": 1, "req_ENTREGA": 1},
-            {"num": 2, "inicio": "09:30", "fin": "10:45", "colacion": False, "req_RECEPCIÓN": 1, "req_PREPARACIÓN": 1, "req_REVISIÓN": 1, "req_ENTREGA": 1},
-            {"num": 3, "inicio": "10:45", "fin": "12:00", "colacion": False, "req_RECEPCIÓN": 1, "req_PREPARACIÓN": 1, "req_REVISIÓN": 1, "req_ENTREGA": 1},
-            {"num": 4, "inicio": "12:00", "fin": "13:15", "colacion": True,  "req_COLACIÓN": 2, "req_RECEPCIÓN": 1, "req_ENTREGA": 1},
-            {"num": 5, "inicio": "13:15", "fin": "14:30", "colacion": True,  "req_COLACIÓN": 2, "req_RECEPCIÓN": 1, "req_ENTREGA": 1},
-            {"num": 6, "inicio": "14:30", "fin": "15:45", "colacion": False, "req_RECEPCIÓN": 1, "req_PREPARACIÓN": 1, "req_REVISIÓN": 1, "req_ENTREGA": 1},
-            {"num": 7, "inicio": "15:45", "fin": "16:00", "colacion": False, "req_RECEPCIÓN": 1, "req_PREPARACIÓN": 1, "req_REVISIÓN": 1, "req_ENTREGA": 1},
-            {"num": 8, "inicio": "16:00", "fin": "17:00", "colacion": False, "req_RECEPCIÓN": 1, "req_PREPARACIÓN": 1, "req_REVISIÓN": 1, "req_ENTREGA": 1},
+            {"Bloque": 1, "Inicio": "08:00", "Fin": "09:30", "Colación": False, "RECEPCIÓN": 1, "PREPARACIÓN": 1, "REVISIÓN": 1, "ENTREGA": 1},
+            {"Bloque": 2, "Inicio": "09:30", "Fin": "10:45", "Colación": False, "RECEPCIÓN": 1, "PREPARACIÓN": 1, "REVISIÓN": 1, "ENTREGA": 1},
+            {"Bloque": 3, "Inicio": "10:45", "Fin": "12:00", "Colación": False, "RECEPCIÓN": 1, "PREPARACIÓN": 1, "REVISIÓN": 1, "ENTREGA": 1},
+            {"Bloque": 4, "Inicio": "12:00", "Fin": "13:15", "Colación": True,  "COLACIÓN": 2, "RECEPCIÓN": 1, "ENTREGA": 1},
+            {"Bloque": 5, "Inicio": "13:15", "Fin": "14:30", "Colación": True,  "COLACIÓN": 2, "RECEPCIÓN": 1, "ENTREGA": 1},
+            {"Bloque": 6, "Inicio": "14:30", "Fin": "15:45", "Colación": False, "RECEPCIÓN": 1, "PREPARACIÓN": 1, "REVISIÓN": 1, "ENTREGA": 1},
+            {"Bloque": 7, "Inicio": "15:45", "Fin": "16:00", "Colación": False, "RECEPCIÓN": 1, "PREPARACIÓN": 1, "REVISIÓN": 1, "ENTREGA": 1},
+            {"Bloque": 8, "Inicio": "16:00", "Fin": "17:00", "Colación": False, "RECEPCIÓN": 1, "PREPARACIÓN": 1, "REVISIÓN": 1, "ENTREGA": 1},
         ]
 
     if "restricciones" not in st.session_state:
         st.session_state.restricciones = [
-            {"tens1": "001", "tens2": "004", "tipo": "No coincidir en ventanilla"},
+            {"TENS 1": "001", "TENS 2": "004", "Tipo de restricción": "No coincidir en ventanilla"},
         ]
 
     if "schedule_result" not in st.session_state:
         st.session_state.schedule_result = None
-
-def auto_generate_tens(cant_turnos, tens_por_turno):
-    """Genera automáticamente IDs de TENS y los reparte de manera equitativa por turno."""
-    lista = []
-    idx = 1
-    for turno in range(1, cant_turnos + 1):
-        for _ in range(tens_por_turno):
-            lista.append({
-                "id": f"{idx:03d}",
-                "turno": turno
-            })
-            idx += 1
-    return lista
